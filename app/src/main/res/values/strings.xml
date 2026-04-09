@@ -4,4 +4,12 @@
     <string name="button_save">Save</string>
     <string name="button_load">Load</string>
     <string name="button_clear">Clear Data</string>
+
+    <string name="toast_empty_note">Please enter note text</string>
+    <string name="toast_save_success">Note saved successfully</string>
+    <string name="toast_save_error">Save error: %1$s</string>
+    <string name="toast_no_note">No saved note found</string>
+    <string name="toast_load_success">Note loaded successfully</string>
+    <string name="toast_load_error">Load/Decryption error: %1$s</string>
+    <string name="toast_clear_success">Data has been cleared</string>
 </resources>

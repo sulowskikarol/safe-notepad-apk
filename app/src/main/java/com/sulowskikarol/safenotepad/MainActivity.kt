@@ -11,6 +11,7 @@ import com.google.android.material.textfield.TextInputEditText
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import kotlin.text.Charsets
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,28 +43,29 @@ class MainActivity : AppCompatActivity() {
         saveButton.setOnClickListener {
             val text = noteEditText.text.toString()
             if (text.isBlank()) {
-                Toast.makeText(this, "Wprowadź tekst notatki", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.toast_empty_note, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             try {
-                val bytes = text.toByteArray()
+                val bytes = text.toByteArray(Charsets.UTF_8)
                 val encryptedBytes = cryptoManager.encrypt(bytes)
 
                 val file = File(filesDir, fileName)
                 FileOutputStream(file).use { fos ->
                     fos.write(encryptedBytes)
                 }
-                Toast.makeText(this, "Notatka zapisana pomyślnie", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.toast_save_success, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(this, "Błąd zapisu: ${e.message}", Toast.LENGTH_LONG).show()
+                val errorMsg = getString(R.string.toast_save_error, e.message ?: "Unknown error")
+                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
             }
         }
 
         loadButton.setOnClickListener {
             val file = File(filesDir, fileName)
             if (!file.exists()) {
-                Toast.makeText(this, "Brak zapisanej notatki", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.toast_no_note, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -72,11 +74,12 @@ class MainActivity : AppCompatActivity() {
                     fis.readBytes()
                 }
                 val decryptedBytes = cryptoManager.decrypt(encryptedBytes)
-                val text = String(decryptedBytes)
+                val text = String(decryptedBytes, Charsets.UTF_8)
                 noteEditText.setText(text)
-                Toast.makeText(this, "Notatka wczytana", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.toast_load_success, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(this, "Błąd odczytu/deszyfrowania: ${e.message}", Toast.LENGTH_LONG).show()
+                val errorMsg = getString(R.string.toast_load_error, e.message ?: "Unknown error")
+                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
             }
         }
 
@@ -87,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             }
             cryptoManager.deleteKey()
             noteEditText.setText("")
-            Toast.makeText(this, "Dane zostały wyczyszczone", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.toast_clear_success, Toast.LENGTH_SHORT).show()
         }
     }
 }
