@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SafeNotepad</string>
+    <string name="note_hint">Note Content</string>
+    <string name="button_save">Save</string>
+    <string name="button_load">Load</string>
+    <string name="button_clear">Clear Data</string>
 </resources>
