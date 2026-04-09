@@ -7,13 +7,63 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/noteInputLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:hint="@string/note_hint"
+        app:layout_constraintBottom_toTopOf="@+id/saveButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/noteEditText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:overScrollMode="always"
+            android:scrollbarStyle="insideInset"
+            android:scrollbars="vertical" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/button_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/loadButton"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/loadButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/button_load"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/clearButton"
+        app:layout_constraintStart_toEndOf="@+id/saveButton" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clearButton"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/button_clear"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/loadButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
