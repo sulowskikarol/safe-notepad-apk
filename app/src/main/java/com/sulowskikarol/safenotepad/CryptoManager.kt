@@ -88,10 +88,14 @@ class CryptoManager {
     }
 
     private fun deriveKeyFromPassword(password: CharArray, salt: ByteArray): SecretKey {
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val spec = PBEKeySpec(password, salt, PBKDF2_ITERATIONS, KEY_LENGTH)
-        val tmp = factory.generateSecret(spec)
-        return SecretKeySpec(tmp.encoded, ALGORITHM)
+        return try {
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val tmp = factory.generateSecret(spec)
+            SecretKeySpec(tmp.encoded, ALGORITHM)
+        } finally {
+            spec.clearPassword()
+        }
     }
 
     fun deleteKey() {

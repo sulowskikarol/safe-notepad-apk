@@ -33,7 +33,11 @@ class MainActivity : AppCompatActivity() {
     private val createDocumentLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream")
     ) { uri ->
-        uri?.let { exportToFile(it) }
+        if (uri != null) {
+            exportToFile(uri)
+        } else {
+            pendingPassword.fill('\u0000')
+        }
     }
 
     private val openDocumentLauncher = registerForActivityResult(
@@ -120,12 +124,26 @@ class MainActivity : AppCompatActivity() {
             hint = getString(R.string.dialog_password_hint)
         }
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_password_title)
             .setView(input)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                val password = input.text.toString().toCharArray()
-                if (password.isEmpty()) return@setPositiveButton
+            .setPositiveButton(R.string.dialog_ok, null) // Set null to override later
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val editable = input.text
+                if (editable.isNullOrEmpty()) {
+                    Toast.makeText(this, R.string.toast_empty_password, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                
+                val password = CharArray(editable.length)
+                for (i in 0 until editable.length) {
+                    password[i] = editable[i]
+                }
                 
                 if (isExport) {
                     pendingPassword = password
@@ -133,9 +151,11 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     uri?.let { importFromFile(it, password) }
                 }
+                editable.clear()
+                dialog.dismiss()
             }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun exportToFile(uri: Uri) {
@@ -161,6 +181,8 @@ class MainActivity : AppCompatActivity() {
                 val decryptedBytes = cryptoManager.decryptWithPassword(encryptedBytes, password)
                 noteEditText.setText(String(decryptedBytes, Charsets.UTF_8))
                 Toast.makeText(this, R.string.toast_import_success, Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, R.string.toast_load_error, Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             Toast.makeText(this, R.string.toast_load_error, Toast.LENGTH_SHORT).show()

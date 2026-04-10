@@ -8,6 +8,7 @@
     <string name="button_import">Import</string>
 
     <string name="toast_empty_note">Please enter note text</string>
+    <string name="toast_empty_password">Please enter password</string>
     <string name="toast_save_success">Note saved successfully</string>
     <string name="toast_save_error">Save error</string>
     <string name="toast_no_note">No saved note found</string>
