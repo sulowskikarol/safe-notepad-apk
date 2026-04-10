@@ -17,9 +17,13 @@
     <string name="toast_clear_success">Data has been cleared</string>
     <string name="toast_export_success">Exported successfully</string>
     <string name="toast_import_success">Imported successfully</string>
+    <string name="toast_auth_error">Authentication failed</string>
 
     <string name="dialog_password_title">Enter Password</string>
     <string name="dialog_password_hint">Password</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+
+    <string name="biometric_title">Authentication required</string>
+    <string name="biometric_subtitle">Log in to manage your notes</string>
 </resources>

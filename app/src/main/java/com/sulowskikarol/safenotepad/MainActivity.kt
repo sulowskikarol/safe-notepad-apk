@@ -10,6 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.textfield.TextInputEditText
@@ -69,14 +73,16 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.toast_empty_note, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            try {
-                val bytes = text.toByteArray(Charsets.UTF_8)
-                val encryptedBytes = cryptoManager.encrypt(bytes)
-                val file = File(filesDir, fileName)
-                FileOutputStream(file).use { it.write(encryptedBytes) }
-                Toast.makeText(this, R.string.toast_save_success, Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(this, R.string.toast_save_error, Toast.LENGTH_SHORT).show()
+            showBiometricPrompt {
+                try {
+                    val bytes = text.toByteArray(Charsets.UTF_8)
+                    val encryptedBytes = cryptoManager.encrypt(bytes)
+                    val file = File(filesDir, fileName)
+                    FileOutputStream(file).use { it.write(encryptedBytes) }
+                    Toast.makeText(this, R.string.toast_save_success, Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, R.string.toast_save_error, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -86,21 +92,25 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.toast_no_note, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            try {
-                val encryptedBytes = FileInputStream(file).use { it.readBytes() }
-                val decryptedBytes = cryptoManager.decrypt(encryptedBytes)
-                noteEditText.setText(String(decryptedBytes, Charsets.UTF_8))
-                Toast.makeText(this, R.string.toast_load_success, Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(this, R.string.toast_load_error, Toast.LENGTH_SHORT).show()
+            showBiometricPrompt {
+                try {
+                    val encryptedBytes = FileInputStream(file).use { it.readBytes() }
+                    val decryptedBytes = cryptoManager.decrypt(encryptedBytes)
+                    noteEditText.setText(String(decryptedBytes, Charsets.UTF_8))
+                    Toast.makeText(this, R.string.toast_load_success, Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, R.string.toast_load_error, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
         clearButton.setOnClickListener {
-            File(filesDir, fileName).takeIf { it.exists() }?.delete()
-            cryptoManager.deleteKey()
-            noteEditText.setText("")
-            Toast.makeText(this, R.string.toast_clear_success, Toast.LENGTH_SHORT).show()
+            showBiometricPrompt {
+                File(filesDir, fileName).takeIf { it.exists() }?.delete()
+                cryptoManager.deleteKey()
+                noteEditText.setText("")
+                Toast.makeText(this, R.string.toast_clear_success, Toast.LENGTH_SHORT).show()
+            }
         }
 
         exportButton.setOnClickListener {
@@ -116,6 +126,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showBiometricPrompt(onSuccess: () -> Unit) {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    onSuccess()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    Toast.makeText(this@MainActivity, R.string.toast_auth_error, Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    Toast.makeText(this@MainActivity, R.string.toast_auth_error, Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.biometric_title))
+            .setSubtitle(getString(R.string.biometric_subtitle))
+            .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
+
     private var pendingPassword = charArrayOf()
 
     private fun showPasswordDialog(isExport: Boolean, uri: Uri? = null) {
@@ -127,7 +166,7 @@ class MainActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_password_title)
             .setView(input)
-            .setPositiveButton(R.string.dialog_ok, null) // Set null to override later
+            .setPositiveButton(R.string.dialog_ok, null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
 
